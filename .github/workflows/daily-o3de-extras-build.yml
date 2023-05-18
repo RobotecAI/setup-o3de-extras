@@ -1,0 +1,26 @@
+name: Docker Build and Publish
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # Runs every day at 2 am
+  workflow_dispatch: # Run manually
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_HUB_USERNAME }}
+        password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v4
+      with:
+        file: ./docker/o3de-extras/Dockerfile
+        push: true
+        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/ci-o3de-extras:latest
