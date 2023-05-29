@@ -1,24 +1,47 @@
-name: 'build-test'
-on: # rebuild any PRs and main branch changes
+name: Docker Test
+
+on:
   pull_request:
   push:
     branches:
       - main
+      - develop
+      - development
       - 'releases/*'
 
 jobs:
-  build: # make sure build/ci work properly
+  build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - run: |
-          npm install
-      - run: |
-          npm run all
-  test: # make sure the action works on a clean machine without building
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ./
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
         with:
-          milliseconds: 1000
+          node-version: 16
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build and CI
+        run: npm run all
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Docker Test
+        run: npm run docker-test
+        env:
+          script-path: test/test-script.sh

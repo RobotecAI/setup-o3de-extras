@@ -1,7 +1,7 @@
 FROM ros:humble-ros-core-jammy
 
 ENV O3DE_LINK=https://o3debinaries.org/main/Latest/Linux/o3de_2305_0.deb
-ENV O3DE_EXTRAS_VERSION=stabilization/2305
+ENV O3DE_EXTRAS_VERSION=2305.0
 ENV PROJECT_NAME=WarehouseTest
 ENV WORKDIR=/data/workspace
 ENV DEBIAN_FRONTEND=noninteractive
@@ -21,6 +21,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     clang \
     cmake \
+    curl \
     file \
     firewalld \
     git \
@@ -58,9 +59,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libffi7 \
     clang-12 \
     mesa-common-dev \
-    snapd
-    # && \
-    # rm -rf /var/lib/apt/lists/*
+    snapd && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install Gem + ROS packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -68,8 +68,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-humble-control-toolbox \
     ros-humble-gazebo-msgs \
     ros-humble-joy \
-    ros-humble-navigation2 \
-    ros-humble-rviz2 \
     ros-humble-tf2-ros \
     ros-humble-urdfdom \
     ros-humble-vision-msgs
@@ -86,18 +84,18 @@ RUN chown -Rv _apt:root /var/cache/apt/archives/partial/ && \
 # Exit 0 to ignore error code 100 at the end of the install
 RUN apt install -y ./o3de.deb; exit 0
 # Clean manually
-RUN mv /var/lib/dpkg/info/o3de.* /tmp 
+RUN rm /var/lib/dpkg/info/o3de.* o3de.deb
 
 # Install o3de-extras
-RUN git clone https://github.com/RobotecAI/o3de-extras.git && \
+RUN git clone --depth 1 --branch ${O3DE_EXTRAS_VERSION} https://github.com/o3de/o3de-extras.git && \
     cd o3de-extras && \
-    git checkout ${O3DE_EXTRAS_VERSION} && \
     git lfs install && \
     git lfs pull
 
 RUN echo "deb http://security.ubuntu.com/ubuntu focal-security main" | tee /etc/apt/sources.list.d/focal-security.list && \
     apt-get update && \
-    apt-get install libssl1.1
+    apt-get install libssl1.1 && \
+    rm -rf /var/lib/apt/lists/*
 
 # Register engine and Gems
 RUN /opt/O3DE/23.05.0/scripts/o3de.sh register --this-engine && \
@@ -121,5 +119,7 @@ RUN . /opt/ros/humble/setup.sh && \
 RUN pip install python-statemachine
 
 WORKDIR $WORKDIR
+
+VOLUME $WORKDIR/o3de-extras
 
 ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp

@@ -1,29 +1,30 @@
 import {wait} from '../src/wait'
 import * as process from 'process'
-import * as cp from 'child_process'
-import * as path from 'path'
 import {expect, test} from '@jest/globals'
+import { execSync } from 'child_process';
+import { readFileSync, writeFileSync } from 'fs';
 
-test('throws invalid number', async () => {
-  const input = parseInt('foo', 10)
-  await expect(wait(input)).rejects.toThrow('milliseconds not a number')
-})
+function runContainerScript(imageName: string, scriptToExecute: string): string {
+  // Write the script to a temporary file
+  const tempFilePath = '/tmp/script.sh';
+  writeFileSync(tempFilePath, scriptToExecute);
 
-test('wait 500 ms', async () => {
-  const start = new Date()
-  await wait(500)
-  const end = new Date()
-  var delta = Math.abs(end.getTime() - start.getTime())
-  expect(delta).toBeGreaterThan(450)
-})
+  // Create a temporary container from the image and execute the script
+  const command = `docker run --rm -v ${tempFilePath}:${tempFilePath} ${imageName} sh ${tempFilePath}`;
+  const output = execSync(command).toString();
 
-// shows how the runner will run a javascript action with env / stdout protocol
-test('test runs', () => {
-  process.env['INPUT_MILLISECONDS'] = '500'
-  const np = process.execPath
-  const ip = path.join(__dirname, '..', 'lib', 'main.js')
-  const options: cp.ExecFileSyncOptions = {
-    env: process.env
-  }
-  console.log(cp.execFileSync(np, [ip], options).toString())
-})
+  return output;
+}
+
+test('Docker Test', () => {
+  const container = process.env['INPUT_KHASRETO/O3DE-EXTRAS-DAILY_DEV'] = 'khasreto/o3de-extras-daily_dev';
+  const scriptPath = process.env['script-path'] || 'test/test-script.sh';
+  // debug print the script path 
+  console.log(`scriptPath: ${scriptPath}`);
+  const scriptToExecute = readFileSync(scriptPath, 'utf-8');
+
+  const output = runContainerScript(container, scriptToExecute);
+
+  // Perform assertions on the output as needed
+  expect(output).toContain('Expected output');
+});

@@ -1,11 +1,17 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Setup o3de-extras'
+description: 'Custom action to setup o3de-extras'
+author: 'Robotec.AI'
+
 inputs:
-  milliseconds: # change this
+  script-path:
+    description: 'Path to the script with all tests defined by the user'
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+    default: 'test/test-script.sh'
+  container:
+    description: 'Container to use for the tests'
+    required: false
+    default: 'khasreto/o3de-extras-daily_dev'
+
 runs:
   using: 'node16'
   main: 'dist/index.js'

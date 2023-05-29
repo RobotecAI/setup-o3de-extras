@@ -1,44 +1,85 @@
-<p align="center">
-  <a href="https://github.com/actions/typescript-action/actions"><img alt="typescript-action status" src="https://github.com/actions/typescript-action/workflows/build-test/badge.svg"></a>
-</p>
+[![Docker Build and Publish](https://github.com/RobotecAI/setup-o3de-extras/actions/workflows/daily-o3de-extras-build.yml/badge.svg)](https://github.com/RobotecAI/setup-o3de-extras/actions/workflows/daily-o3de-extras-build.yml)
 
-# Create a JavaScript Action using TypeScript
+# Action that could be used to test projects that use O3DE-Extras
 
-Use this template to bootstrap the creation of a TypeScript action.:rocket:
+This action will build and publish the container image containing O3DE-extras to the dockerhub and the reuse this image to build and run your custom tests.
 
-This template includes compilation support, tests, a validation workflow, publishing, and versioning guidance.  
+The container is called `ci-o3de-extras:latest` and could be found TODO: add link to the dockerhub.
 
-If you are new, there's also a simpler introduction.  See the [Hello World JavaScript Action](https://github.com/actions/hello-world-javascript-action)
+Versions:
+OS: Ubuntu Jammy
+O3DE: 2305
+O3DE-Extras: 2305.0
+ROS2: humble
+NodeJs: 16
 
-## Create an action from this template
+Github large runner or self-hosted runner is required to run this action. (The container is too big for the regular runner, ~32GB)
 
-Click the `Use this Template` and provide the new repo details for your action
+## Requirements
 
-## Code in Main
+Test script. This action allows to execute your custom tests inside the container. Remember that the script should be executable (`chmod +x`).
 
-> First, you'll need to have a reasonably modern version of `node` handy. This won't work with versions older than 9, for instance.
-
-Install the dependencies  
+Example of the test script:
 ```bash
-$ npm install
+#!/bin/bash
+
+# Expected result
+VALUE="RESULT: ALL TESTS PASSED"
+
+# Print the value
+echo $VALUE
+
+exit 0
 ```
 
-Build the typescript and package it for distribution
-```bash
-$ npm run build && npm run package
+Expected result form the test script is `RESULT: ALL TESTS PASSED`. If the result is different the action will fail.
+
+
+## Create an workflow that uses this action
+
+```yaml
+name: TEST - Build with O3DE Extras
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up O3DE Extras
+        uses: robotec.ai/setup-o3de-extras@0.1
+        with:
+          script-path: test/script.sh
 ```
 
-Run the tests :heavy_check_mark:  
+
+## Modifying the action
+
+1. Modify the action by editing `action.yml` and `src/main.ts`. 
+2. Install the dependencies
 ```bash
-$ npm test
-
- PASS  ./index.test.js
-  ✓ throws invalid number (3ms)
-  ✓ wait 500 ms (504ms)
-  ✓ test runs (95ms)
-
-...
+npm install
 ```
+3. Build the typescript and package it for distribution
+```bash
+npm run build && npm run package
+```
+4. Run the tests :heavy_check_mark:  
+```bash
+npm test # this will run the `__tests__/main.test.js` using Jest
+```
+
+To add files from different paths modify the `tsconfig.build.json` file.
 
 ## Change action.yml
 
@@ -48,58 +89,12 @@ Update the action.yml with your name, description, inputs and outputs for your a
 
 See the [documentation](https://help.github.com/en/articles/metadata-syntax-for-github-actions)
 
-## Change the Code
+## Publish 
 
-Most toolkit and CI/CD operations involve async operations so the action is run in an async function.
+To publish a new version: 
+1. RUN `npm run build && npm run package`
+2. Commit the changes
+3. Create a new tag with the version number (e.g. `v1.0.0`)
+4. Push the changes to the repo
+5. Create a new release with the same tag version you used before (e.g. `v1.0.0`) from the Releases tab on your GitHub repo.
 
-```javascript
-import * as core from '@actions/core';
-...
-
-async function run() {
-  try { 
-      ...
-  } 
-  catch (error) {
-    core.setFailed(error.message);
-  }
-}
-
-run()
-```
-
-See the [toolkit documentation](https://github.com/actions/toolkit/blob/master/README.md#packages) for the various packages.
-
-## Publish to a distribution branch
-
-Actions are run from GitHub repos so we will checkin the packed dist folder. 
-
-Then run [ncc](https://github.com/zeit/ncc) and push the results:
-```bash
-$ npm run package
-$ git add dist
-$ git commit -a -m "prod dependencies"
-$ git push origin releases/v1
-```
-
-Note: We recommend using the `--license` option for ncc, which will create a license file for all of the production node modules used in your project.
-
-Your action is now published! :rocket: 
-
-See the [versioning documentation](https://github.com/actions/toolkit/blob/master/docs/action-versioning.md)
-
-## Validate
-
-You can now validate the action by referencing `./` in a workflow in your repo (see [test.yml](.github/workflows/test.yml))
-
-```yaml
-uses: ./
-with:
-  milliseconds: 1000
-```
-
-See the [actions tab](https://github.com/actions/typescript-action/actions) for runs of this action! :rocket:
-
-## Usage:
-
-After testing you can [create a v1 tag](https://github.com/actions/toolkit/blob/master/docs/action-versioning.md) to reference the stable and latest V1 action

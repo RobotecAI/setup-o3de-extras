@@ -40,55 +40,63 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(186));
-const wait_1 = __nccwpck_require__(817);
+const child_process_1 = __nccwpck_require__(81);
+const fs_1 = __nccwpck_require__(147);
+const fs_2 = __nccwpck_require__(147);
+function runContainerScript(imageName, scriptToExecute) {
+    // Write the script to a temporary file
+    const tempFilePath = '/tmp/o3de-extras-test-script.sh';
+    // try to remove the file if it exists
+    try {
+        (0, child_process_1.execSync)(`rm ${tempFilePath}`);
+    }
+    catch (error) {
+        // do nothing
+    }
+    (0, fs_2.writeFileSync)(tempFilePath, scriptToExecute.toString());
+    // Execute the script inside the container
+    const command = `docker run --rm -v ${tempFilePath}:${tempFilePath} -v $(pwd)/../o3de-extras:/data/workspace/o3de-extras ${imageName} sh ${tempFilePath}`;
+    const output = (0, child_process_1.execSync)(command).toString();
+    return output;
+}
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const ms = core.getInput('milliseconds');
-            core.debug(`Waiting ${ms} milliseconds ...`); // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
-            core.debug(new Date().toTimeString());
-            yield (0, wait_1.wait)(parseInt(ms, 10));
-            core.debug(new Date().toTimeString());
-            core.setOutput('time', new Date().toTimeString());
+            // const container = 'khasreto/o3de-extras-daily_dev';
+            const container = core.getInput('container');
+            const scriptPath = core.getInput('script-path');
+            const scriptToExecute = yield new Promise((resolve, reject) => {
+                (0, fs_1.readFile)(scriptPath, 'utf8', (err, data) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    else {
+                        resolve(data);
+                    }
+                });
+            });
+            // Run the main script on the modified container
+            const mainOutput = runContainerScript(container, scriptToExecute);
+            core.info('Main script output:');
+            core.info(mainOutput);
+            // Perform assertions on the output as needed
+            if (mainOutput.includes('RESULT: ALL TESTS PASSED')) {
+                core.info('Docker test passed!');
+            }
+            else {
+                core.error('Docker test failed!');
+                core.setFailed('Docker test failed!');
+            }
         }
         catch (error) {
-            if (error instanceof Error)
+            if (error instanceof Error) {
+                core.error(error.message);
                 core.setFailed(error.message);
+            }
         }
     });
 }
 run();
-
-
-/***/ }),
-
-/***/ 817:
-/***/ (function(__unused_webpack_module, exports) {
-
-"use strict";
-
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.wait = void 0;
-function wait(milliseconds) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return new Promise(resolve => {
-            if (isNaN(milliseconds)) {
-                throw new Error('milliseconds not a number');
-            }
-            setTimeout(() => resolve('done!'), milliseconds);
-        });
-    });
-}
-exports.wait = wait;
 
 
 /***/ }),
@@ -2785,6 +2793,14 @@ exports["default"] = _default;
 
 "use strict";
 module.exports = require("assert");
+
+/***/ }),
+
+/***/ 81:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("child_process");
 
 /***/ }),
 
