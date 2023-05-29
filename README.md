@@ -13,6 +13,10 @@ O3DE-Extras: 2305.0
 ROS2: humble
 NodeJs: 16
 
+SECRETS:
+`DOCKER_HUB_USERNAME`
+`DOCKER_HUB_PASSWORD`
+
 Github large runner or self-hosted runner is required to run this action. (The container is too big for the regular runner, ~32GB)
 
 ## Requirements
