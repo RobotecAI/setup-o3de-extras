@@ -1,7 +1,6 @@
 import * as core from '@actions/core';
 import { execSync } from 'child_process';
-import { readFile } from 'fs';
-import { writeFileSync } from 'fs';
+import { readFile, writeFileSync} from 'fs';
 
 function runContainerScript(imageName: string, scriptToExecute: string): string {
   // Write the script to a temporary file
