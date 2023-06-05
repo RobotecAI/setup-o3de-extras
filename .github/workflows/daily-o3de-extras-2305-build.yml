@@ -2,7 +2,7 @@ name: Docker Build and Publish 2305
 
 on:
   schedule:
-    - cron: '0 2 * * *' # Runs every day at 2 am
+    - cron: '0 3 * * *' # Runs every day at 2 am
   workflow_dispatch: # Run manually
 
 jobs:
