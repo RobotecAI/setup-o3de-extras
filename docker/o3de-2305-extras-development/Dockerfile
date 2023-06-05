@@ -1,7 +1,7 @@
 FROM ros:humble-ros-core-jammy
 
 ENV O3DE_LINK=https://o3debinaries.org/main/Latest/Linux/o3de_2305_0.deb
-ENV O3DE_EXTRAS_VERSION=2305.0
+ENV O3DE_EXTRAS_VERSION=development
 ENV PROJECT_NAME=WarehouseTest
 ENV WORKDIR=/data/workspace
 ENV DEBIAN_FRONTEND=noninteractive
@@ -122,4 +122,9 @@ WORKDIR $WORKDIR
 
 VOLUME $WORKDIR/o3de-extras
 
-ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+# Extra volume for the user to mount their own repository
+RUN mkdir -p $WORKDIR/repository
+
+VOLUME $WORKDIR/repository
+
+ENV RMW_IMPLEMENTATION=rmw_fastrtps_cpp

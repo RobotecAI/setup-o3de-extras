@@ -1,32 +1,12 @@
 import * as core from '@actions/core';
-import { execSync } from 'child_process';
-import { readFile, writeFileSync} from 'fs';
-
-function runContainerScript(imageName: string, scriptToExecute: string): string {
-  // Write the script to a temporary file
-  const tempFilePath = '/tmp/o3de-extras-test-script.sh';
-  // try to remove the file if it exists
-  try {
-    execSync(`rm ${tempFilePath}`);
-  } catch (error) {
-    // do nothing
-  }
-
-  writeFileSync(tempFilePath, scriptToExecute.toString());
-
-  // Execute the script inside the container
-  const command = `docker run --rm -v ${tempFilePath}:${tempFilePath} -v $(pwd)/../o3de-extras:/data/workspace/o3de-extras ${imageName} sh ${tempFilePath}`;
-  const output = execSync(command).toString();
-
-  return output;
-}
+import { readFile } from 'fs';
+import { runContainerScript } from './container';
 
 async function run(): Promise<void> {
   try {
-    // const container = 'khasreto/o3de-extras-daily_dev';
     const container = core.getInput('container');
     const scriptPath = core.getInput('script-path');
-    
+
     const scriptToExecute = await new Promise<string>((resolve, reject) => {
       readFile(scriptPath, 'utf8', (err, data) => {
         if (err) {
@@ -38,7 +18,7 @@ async function run(): Promise<void> {
     });
 
     // Run the main script on the modified container
-    const mainOutput = runContainerScript(container, scriptToExecute);
+    const mainOutput = await runContainerScript(container, scriptToExecute);
     core.info('Main script output:');
     core.info(mainOutput);
 

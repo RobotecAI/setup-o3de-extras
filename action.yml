@@ -10,7 +10,7 @@ inputs:
   container:
     description: 'Container to use for the tests'
     required: false
-    default: 'khasreto/o3de-extras-daily_dev'
+    default: 'robotecai/o3de-2305-extras-2305:latest'
 
 runs:
   using: 'node16'

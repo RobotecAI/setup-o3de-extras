@@ -42,6 +42,6 @@ jobs:
         run: npm install
 
       - name: Run Docker Test
-        run: npm run docker-test
+        run: npm run test
         env:
           script-path: test/test-script.sh

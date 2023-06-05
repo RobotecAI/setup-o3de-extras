@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-and-publish:
-    runs-on: ubuntu-latest 
+    runs-on: self-hosted
     # Only run on main branch
     if: github.ref == 'refs/heads/main' 
     steps:
@@ -22,6 +22,6 @@ jobs:
     - name: Build and push Docker image
       uses: docker/build-push-action@v4
       with:
-        file: ./docker/o3de-extras-daily/Dockerfile
+        file: ./docker/o3de-2305-extras-development/Dockerfile
         push: true
-        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/ci-o3de-extras:latest
+        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/o3de-2305-extras-development:latest
