@@ -15,25 +15,27 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.runContainerScript = void 0;
 const child_process_1 = __nccwpck_require__(2081);
 const io_1 = __nccwpck_require__(1915);
 const file_1 = __nccwpck_require__(4014);
 const fs_1 = __nccwpck_require__(7147);
-const io_2 = __nccwpck_require__(1915);
+const os_1 = __importDefault(__nccwpck_require__(2037));
+const path_1 = __importDefault(__nccwpck_require__(1017));
 function runContainerScript(imageName, scriptToExecute) {
     return __awaiter(this, void 0, void 0, function* () {
         // Write the script to a temporary file
-        const os = __nccwpck_require__(2037);
-        const path = __nccwpck_require__(1017);
-        const tempFilePath = path.join(os.tmpdir(), 'ci-test');
+        const tempFilePath = path_1.default.join(os_1.default.tmpdir(), 'ci-test');
         const tempFileName = 'script.sh';
-        const tempFileFullPath = path.join(tempFilePath, tempFileName);
-        const containerScriptsPath = path.join(os.tmpdir(), 'scripts');
-        const containerScriptFullPath = path.join(containerScriptsPath, tempFileName);
+        const tempFileFullPath = path_1.default.join(tempFilePath, tempFileName);
+        const containerScriptsPath = path_1.default.join(os_1.default.tmpdir(), 'scripts');
+        const containerScriptFullPath = path_1.default.join(containerScriptsPath, tempFileName);
         try {
-            (0, io_2.removeDirectorySync)(tempFilePath);
+            (0, io_1.removeDirectorySync)(tempFilePath);
             // create the directory
             yield new Promise((resolve, reject) => {
                 (0, fs_1.mkdir)(tempFilePath, { recursive: true }, (err) => {
@@ -63,15 +65,15 @@ function runContainerScript(imageName, scriptToExecute) {
             else {
                 // Determine the working directory
                 const repoPath = (0, child_process_1.execSync)('pwd').toString().trim();
-                console.log(`Working directory: ${repoPath}`);
+                console.debug(`Working directory: ${repoPath}`);
                 // Determine the command based on the repo name
                 let command = '';
                 if (repoPath.endsWith('o3de-extras')) {
-                    console.log('o3de-extras detected');
+                    console.debug('o3de-extras detected');
                     command = `docker run --rm -v ${tempFilePath}:${containerScriptsPath} -v ${repoPath}:/data/workspace/o3de-extras --workdir /data/workspace/o3de-extras ${imageName} /bin/bash ${containerScriptFullPath}`;
                 }
                 else {
-                    console.log(`Running on a general-purpose repo: ${repoPath}`);
+                    console.debug(`Running on a general-purpose repo: ${repoPath}`);
                     command = `docker run --rm -v ${tempFilePath}:${containerScriptsPath} -v ${repoPath}:/data/workspace/repository --workdir /data/workspace/repository ${imageName} /bin/bash ${containerScriptFullPath}`;
                 }
                 // remove any new line characters
@@ -98,23 +100,34 @@ exports.runContainerScript = runContainerScript;
 /***/ }),
 
 /***/ 4014:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
 
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.checkIfFile = void 0;
 const fs_1 = __nccwpck_require__(7147);
 function checkIfFile(filePath) {
-    return new Promise((resolve, reject) => {
-        (0, fs_1.stat)(filePath, (err, stats) => {
-            if (err) {
-                console.error(`Failed to retrieve file information: ${filePath}`);
-                reject(err);
-            }
-            else {
-                resolve(stats.isFile());
-            }
+    return __awaiter(this, void 0, void 0, function* () {
+        return new Promise((resolve, reject) => {
+            (0, fs_1.stat)(filePath, (err, stats) => {
+                if (err) {
+                    console.error(`Failed to retrieve file information: ${filePath}`);
+                    reject(err);
+                }
+                else {
+                    resolve(stats.isFile());
+                }
+            });
         });
     });
 }
@@ -128,31 +141,41 @@ exports.checkIfFile = checkIfFile;
 
 "use strict";
 
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.removeDirectorySync = exports.removeDirectory = exports.writeToFile = void 0;
 const child_process_1 = __nccwpck_require__(2081);
-const rimraf_1 = __importDefault(__nccwpck_require__(784));
+const rimraf_1 = __nccwpck_require__(784);
 function writeToFile(filePath, data) {
-    return new Promise((resolve, reject) => {
-        const command = `echo "${data}" > ${filePath}`;
-        const output = (0, child_process_1.execSync)(command).toString();
-        resolve();
+    return __awaiter(this, void 0, void 0, function* () {
+        return new Promise((resolve) => {
+            const command = `echo "${data}" > ${filePath}`;
+            (0, child_process_1.execSync)(command).toString();
+            resolve();
+        });
     });
 }
 exports.writeToFile = writeToFile;
 function removeDirectory(directoryPath) {
-    return new Promise((resolve, reject) => {
-        (0, rimraf_1.default)(directoryPath, { preserveRoot: false });
-        resolve();
+    return __awaiter(this, void 0, void 0, function* () {
+        return new Promise((resolve) => {
+            (0, rimraf_1.rimraf)(directoryPath, { preserveRoot: false });
+            resolve();
+        });
     });
 }
 exports.removeDirectory = removeDirectory;
 // Sync version of removeDirectory
 function removeDirectorySync(directoryPath) {
-    rimraf_1.default.sync(directoryPath, { preserveRoot: false });
+    rimraf_1.rimraf.sync(directoryPath, { preserveRoot: false });
 }
 exports.removeDirectorySync = removeDirectorySync;
 

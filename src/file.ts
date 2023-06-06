@@ -1,6 +1,6 @@
 import { stat } from 'fs';
 
-export function checkIfFile(filePath: string): Promise<boolean> {
+export async function checkIfFile(filePath: string): Promise<boolean> {
   return new Promise<boolean>((resolve, reject) => {
     stat(filePath, (err, stats) => {
       if (err) {
