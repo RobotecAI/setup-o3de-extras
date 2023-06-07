@@ -1,4 +1,8 @@
-[![Docker Build and Publish](https://github.com/RobotecAI/setup-o3de-extras/actions/workflows/daily-o3de-extras-build.yml/badge.svg)](https://github.com/RobotecAI/setup-o3de-extras/actions/workflows/daily-o3de-extras-build.yml)
+Currently two containers are available:
+
+[![Docker Build and Publish 2305](https://github.com/RobotecAI/setup-o3de-extras/actions/workflows/daily-o3de-extras-2305-build.yml/badge.svg)](https://github.com/RobotecAI/setup-o3de-extras/actions/workflows/daily-o3de-extras-2305-build.yml)
+
+[![Docker Build and Publish development](https://github.com/RobotecAI/setup-o3de-extras/actions/workflows/daily-o3de-extras-development-build.yml/badge.svg)](https://github.com/RobotecAI/setup-o3de-extras/actions/workflows/daily-o3de-extras-development-build.yml)
 
 # Action that could be used to test projects that use O3DE-Extras
 
@@ -11,6 +15,7 @@ OS: Ubuntu Jammy
 O3DE: 2305
 O3DE-Extras: 2305.0
 ROS2: humble
+RMW_IMPLEMENTATION: rmw_fastrtps_cpp
 NodeJs: 16
 
 SECRETS:
@@ -38,6 +43,46 @@ exit 0
 
 Expected result form the test script is `RESULT: ALL TESTS PASSED`. If the result is different the action will fail.
 
+## Writing tests
+
+### Introduction
+
+The test script is a bash script (executed inside docker container) that should return `RESULT: ALL TESTS PASSED` if all tests passed. If the result is different the action will fail. The container is based on the Ubuntu Jammy and contains O3DE, O3DE-Extras, ROS2, NodeJs and other dependencies needed to build [WarehouseTest Project](https://development--o3deorg.netlify.app/docs/user-guide/interactivity/robotics/project-configuration/).
+
+The images are based on the [docker](./docker/) dockerfiles.
+
+The o3de is installed form binary so the path is `/opt/O3DE/23.05.0/scripts/o3de.sh` 
+
+The o3de-extras is cloned into `/data/workspace/o3de-extras`
+
+If the user tests `o3de-extras` the directory `/data/workspace/o3de-extras` is mounted into the container hovering the /data/workspace/o3de-extras inside the container. This allows to test the changes made to the o3de-extras and the PR. In other cases the directory is mounted into the `/data/workspace/repository` directory. So the user should use the `/data/workspace/repository` directory to access the tested repository.
+
+### Example
+
+Here is an example of the test script that builds the WarehouseTest project (check if it builds). The user is allowed to add any other tests to the script, install dependencies, run CTest, etc.
+
+```
+#!/bin/bash
+
+echo "Running test script"
+
+# Test
+. /opt/ros/humble/setup.sh
+
+cd /data/workspace/WarehouseTest
+
+if cmake --build build/linux --config profile --target WarehouseTest.GameLauncher Editor ; then
+    VALUE="RESULT: ALL TESTS PASSED" # expected result
+    echo "Build succeeded"
+else
+    VALUE="RESULT: Build failed"
+fi
+
+# Print the value, needed for the action to get the result
+echo $VALUE
+
+exit 0
+```
 
 ## Create an workflow that uses this action
 
@@ -63,7 +108,8 @@ jobs:
       - name: Set up O3DE Extras
         uses: robotec.ai/setup-o3de-extras@0.1
         with:
-          script-path: test/script.sh
+          script-path: test/script.sh # path to the test script inside tested repository
+          container: robotecai/o3de-2305-extras-2305:latest # container image to use
 ```
 
 
