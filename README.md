@@ -111,7 +111,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set up O3DE Extras
-        uses: robotec.ai/setup-o3de-extras@0.1 # change to use the latest version
+        uses: RobotecAI/setup-o3de-extras@0.1 # change to use the latest version
         with:
           script-path: Test/script.sh # path to the test script inside tested repository
           container: robotecai/o3de-2305-extras-2305:latest # container image to use
