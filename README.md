@@ -61,7 +61,10 @@ If the user tests `o3de-extras` the directory `/data/workspace/o3de-extras` is m
 
 Here is an example of the test script that builds the WarehouseTest project (check if it builds). The user is allowed to add any other tests to the script, install dependencies, run CTest, etc.
 
-```
+
+Create a new file `Test/script.sh` inside the repository that you want to test. Add the following content to test build of the o3de-extras WarehouseTest project:
+
+```bash
 #!/bin/bash
 
 echo "Running test script"
@@ -86,6 +89,8 @@ exit 0
 
 ## Create an workflow that uses this action
 
+Create a new workflow file (e.g. `.github/workflows/test.yml`) and add the following content:
+
 ```yaml
 name: TEST - Build with O3DE Extras
 
@@ -106,9 +111,9 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set up O3DE Extras
-        uses: robotec.ai/setup-o3de-extras@0.1
+        uses: robotec.ai/setup-o3de-extras@0.1 # change to use the latest version
         with:
-          script-path: test/script.sh # path to the test script inside tested repository
+          script-path: Test/script.sh # path to the test script inside tested repository
           container: robotecai/o3de-2305-extras-2305:latest # container image to use
 ```
 
