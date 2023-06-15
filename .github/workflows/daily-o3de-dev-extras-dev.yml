@@ -2,7 +2,7 @@ name: Docker Build and Publish 2305
 
 on:
   schedule:
-    - cron: '0 3 * * *' # Runs every day at 3 am
+    - cron: '0 4 * * *' # Runs every day at 4 am
   workflow_dispatch: # Run manually
 
 jobs:
@@ -22,6 +22,6 @@ jobs:
     - name: Build and push Docker image
       uses: docker/build-push-action@v4
       with:
-        file: ./docker/o3de-2305-extras-2305/Dockerfile
+        file: ./docker/o3de-dev-extras-dev/Dockerfile
         push: true
-        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/o3de-2305-extras-2305:latest
+        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/o3de-dev-extras-dev:latest
