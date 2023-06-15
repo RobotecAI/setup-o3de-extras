@@ -64,15 +64,13 @@ export async function runContainerScript(imageName: string, scriptToExecute: str
       command = command.replace('\n', '');
 
       // Execute the Docker command using spawnSync
-      const result = spawnSync('sh', ['-c', command]);
+      const result = spawnSync('sh', ['-c', command], { stdio: 'pipe' });
 
-      if (result.error) {
-        console.error('Command execution failed:', result.error);
-        throw result.error;
-      }
+      const infoOutput = result.stdout ? result.stdout.toString('utf-8') : '';
+      const errorOutput = result.stderr ? result.stderr.toString('utf-8') : '';
+      const output = infoOutput + errorOutput;
 
-      const output = result.stdout.toString();
-      return output;
+      return output.toString();
     }
   } catch (error) {
     console.error(error);

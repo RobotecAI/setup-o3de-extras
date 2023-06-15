@@ -1,0 +1,13 @@
+version: '3.9'
+services:
+  dev:
+    build: .
+    volumes:
+      - type: bind
+        source: ./Dockerfile
+        target: /app/o3de
+    ports:
+      - target: 5000
+        published: 5000
+        protocol: tcp
+        mode: host
