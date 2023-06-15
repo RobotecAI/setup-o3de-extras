@@ -1,4 +1,4 @@
-name: Docker Build and Publish development
+name: Docker Build and Publish 2305-dev
 
 on:
   schedule:
