@@ -103,6 +103,11 @@ RUN git clone -b ${O3DE_EXTRAS_VERSION} --single-branch https://github.com/Robot
     git lfs install && \
     git lfs pull
 
+RUN echo "deb http://security.ubuntu.com/ubuntu focal-security main" | tee /etc/apt/sources.list.d/focal-security.list && \
+    apt-get update && \
+    apt-get install libssl1.1 && \
+    rm -rf /var/lib/apt/lists/*
+
 # regiester engine and Gems from o3de-extras
 WORKDIR ${WORKDIR}
 RUN ./o3de/scripts/o3de.sh register --this-engine && \
@@ -121,25 +126,7 @@ RUN . /opt/ros/humble/setup.sh && \
     cmake -B build/linux -S . -G "Ninja Multi-Config" -DLY_STRIP_DEBUG_SYMBOLS=ON
 
 RUN . /opt/ros/humble/setup.sh && \
-    cmake --build build/linux --config profile --target ${PROJECT_NAME} Editor AssetProcessor
-
-# This final step takes long since they Assets will be downloading
-RUN . /opt/ros/humble/setup.sh && \
-    cmake --build build/linux --config profile --target ${PROJECT_NAME}.Assets
-
-# Installing some ros2 for navigation
-RUN apt-get update && apt-get install -y \
-    python3-colcon-common-extensions \
-    ros-humble-cyclonedds \
-    ros-humble-rmw-cyclonedds-cpp \
-    ros-humble-slam-toolbox \
-    ros-humble-navigation2 \
-    ros-humble-nav2-bringup \
-    ros-humble-pointcloud-to-laserscan \
-    ros-humble-teleop-twist-keyboard \
-    ros-humble-ackermann-msgs \
-    ros-humble-topic-tools && \
-    rm -rf /var/lib/apt/lists/*
+    cmake --build build/linux --config profile --target ${PROJECT_NAME}.GameLauncher Editor
 
 RUN pip install python-statemachine
 
