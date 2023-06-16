@@ -1,8 +1,10 @@
 Currently two containers are available:
 
-[![Docker Build and Publish 2305](https://github.com/RobotecAI/setup-o3de-extras/actions/workflows/daily-o3de-extras-2305-build.yml/badge.svg)](https://github.com/RobotecAI/setup-o3de-extras/actions/workflows/daily-o3de-extras-2305-build.yml)
+[![Docker Build and Publish O3DE development O3DE-Extras development](https://github.com/RobotecAI/setup-o3de-extras/actions/workflows/daily-o3de-dev-extras-dev.yml/badge.svg)](https://github.com/RobotecAI/setup-o3de-extras/actions/workflows/daily-o3de-dev-extras-dev.yml)
 
-[![Docker Build and Publish development](https://github.com/RobotecAI/setup-o3de-extras/actions/workflows/daily-o3de-extras-development-build.yml/badge.svg)](https://github.com/RobotecAI/setup-o3de-extras/actions/workflows/daily-o3de-extras-development-build.yml)
+[![Docker Build and Publish O3DE 2305 O3DE-Extras 2305](https://github.com/RobotecAI/setup-o3de-extras/actions/workflows/daily-o3de-extras-2305-build.yml/badge.svg)](https://github.com/RobotecAI/setup-o3de-extras/actions/workflows/daily-o3de-extras-2305-build.yml)
+
+[![Docker Build and Publish O3DE 2305 O3DE-Extras development](https://github.com/RobotecAI/setup-o3de-extras/actions/workflows/daily-o3de-extras-development-build.yml/badge.svg)](https://github.com/RobotecAI/setup-o3de-extras/actions/workflows/daily-o3de-extras-development-build.yml)
 
 # Action that could be used to test projects that use O3DE-Extras
 
@@ -75,14 +77,11 @@ echo "Running test script"
 cd /data/workspace/WarehouseTest
 
 if cmake --build build/linux --config profile --target WarehouseTest.GameLauncher Editor ; then
-    VALUE="RESULT: ALL TESTS PASSED" # expected result
+    echo "RESULT: ALL TESTS PASSED" # Print the value, needed for the action to get the result
     echo "Build succeeded"
 else
-    VALUE="RESULT: Build failed"
+    echo "RESULT: Build failed"
 fi
-
-# Print the value, needed for the action to get the result
-echo $VALUE
 
 exit 0
 ```
