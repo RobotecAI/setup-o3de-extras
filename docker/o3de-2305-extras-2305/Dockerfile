@@ -72,6 +72,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-humble-urdfdom \
     ros-humble-vision-msgs
 
+# VNC and xvfb
+RUN apt-get update -y \
+    && apt-get -y install \
+    xvfb x11vnc
+
 ## Symlink clang version to non-versioned clang and set cc to clang
 RUN update-alternatives --install /usr/bin/cc cc /usr/bin/clang 100 && \
     update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++ 100
@@ -87,6 +92,7 @@ RUN apt install -y ./o3de.deb; exit 0
 RUN rm /var/lib/dpkg/info/o3de.* o3de.deb
 
 # Install o3de-extras
+# ADD https://api.github.com/repos/o3de/o3de-extras/git/refs/heads/${O3DE_EXTRAS_VERSION} o3de-extras-version.json
 RUN git clone --depth 1 --branch ${O3DE_EXTRAS_VERSION} https://github.com/o3de/o3de-extras.git && \
     cd o3de-extras && \
     git lfs install && \
@@ -96,6 +102,8 @@ RUN echo "deb http://security.ubuntu.com/ubuntu focal-security main" | tee /etc/
     apt-get update && \
     apt-get install libssl1.1 && \
     rm -rf /var/lib/apt/lists/*
+
+RUN /opt/O3DE/23.05.0/python/get_python.sh
 
 # Register engine and Gems
 RUN /opt/O3DE/23.05.0/scripts/o3de.sh register --this-engine && \
@@ -111,7 +119,7 @@ RUN /opt/O3DE/23.05.0/scripts/o3de.sh create-project \
 WORKDIR ${WORKDIR}/${PROJECT_NAME}
 
 RUN . /opt/ros/humble/setup.sh && \
-    cmake -B build/linux -S . -G "Ninja Multi-Config" -DLY_STRIP_DEBUG_SYMBOLS=ON
+    cmake -B build/linux -S . -G "Ninja Multi-Config" -DLY_STRIP_DEBUG_SYMBOLS=ON -DLY_DISABLE_TEST_MODULES=OFF
 
 RUN . /opt/ros/humble/setup.sh && \
     cmake --build build/linux --config profile --target ${PROJECT_NAME}.GameLauncher Editor
