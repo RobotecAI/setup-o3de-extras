@@ -111,7 +111,7 @@ RUN /opt/O3DE/23.05.0/scripts/o3de.sh create-project \
 WORKDIR ${WORKDIR}/${PROJECT_NAME}
 
 RUN . /opt/ros/humble/setup.sh && \
-    cmake -B build/linux -S . -G "Ninja Multi-Config" -DLY_STRIP_DEBUG_SYMBOLS=ON
+    cmake -B build/linux -S . -G "Ninja Multi-Config" -DLY_STRIP_DEBUG_SYMBOLS=ON -DLY_DISABLE_TEST_MODULES=OFF
 
 RUN . /opt/ros/humble/setup.sh && \
     cmake --build build/linux --config profile --target ${PROJECT_NAME}.GameLauncher Editor
