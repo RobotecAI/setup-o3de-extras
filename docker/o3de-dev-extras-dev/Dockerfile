@@ -86,9 +86,16 @@ RUN apt-get update && apt-get install -y \
     ros-humble-urdfdom \
     ros-humble-vision-msgs &&    rm -rf /var/lib/apt/lists/*
 
+# VNC and xvfb
+RUN apt-get update -y \
+    && apt-get -y install \
+    xvfb x11vnc
+
 ## Symlink clang version to non-versioned clang and set cc to clang
 RUN update-alternatives --install /usr/bin/cc cc /usr/bin/clang 100 && \
     update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++ 100
+
+ADD https://api.github.com/repos/o3de/o3de/git/refs/heads/${O3DE_VERSION} o3de-version.json
 
 # Install o3de
 RUN git clone -b ${O3DE_VERSION} --single-branch https://github.com/o3de/o3de.git && \
@@ -100,6 +107,7 @@ RUN cd o3de && \
     python/get_python.sh
 
 # Install o3de-extras
+ADD https://api.github.com/repos/o3de/o3de-extras/git/refs/heads/${O3DE_EXTRAS_VERSION} o3de-extras-version.json
 RUN git clone -b ${O3DE_EXTRAS_VERSION} --single-branch https://github.com/RobotecAI/o3de-extras.git && \
     cd o3de-extras && \
     git lfs install && \
@@ -142,3 +150,6 @@ RUN mkdir -p $WORKDIR/repository
 VOLUME $WORKDIR/repository
 
 ENV RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+
+ENV NVIDIA_VISIBLE_DEVICES all
+ENV NVIDIA_DRIVER_CAPABILITIES all
