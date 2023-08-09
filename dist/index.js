@@ -80,20 +80,15 @@ function runContainerScript(imageName, scriptToExecute, coreInfo) {
                 command = command.replace('\n', '');
                 // Execute the Docker command using spawn
                 const commandRunner = (0, child_process_1.spawn)('sh', ['-c', command]);
-                let infoOutput = '';
-                let errorOutput = '';
                 commandRunner.stdout.on('data', (data) => {
                     coreInfo(data);
-                    infoOutput += data;
                 });
                 commandRunner.stderr.on('data', (data) => {
                     coreInfo(data);
-                    errorOutput += data;
                 });
-                const exitCode = yield new Promise((resolve, reject) => {
+                const exitCode = yield new Promise((resolve) => {
                     commandRunner.on('close', resolve);
                 });
-                const output = infoOutput + errorOutput;
                 return exitCode;
             }
         }

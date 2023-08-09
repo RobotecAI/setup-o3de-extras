@@ -1,4 +1,4 @@
-import {execSync, spawn, spawnSync} from 'child_process';
+import {execSync, spawn} from 'child_process';
 import {mkdir} from 'fs';
 import os from 'os';
 import path from 'path';
@@ -69,24 +69,17 @@ export async function runContainerScript(
       // Execute the Docker command using spawn
       const commandRunner = spawn('sh', ['-c', command]);
 
-      let infoOutput: string = '';
-      let errorOutput: string = '';
-
       commandRunner.stdout.on('data', (data: string) => {
         coreInfo(data);
-        infoOutput += data;
       })
 
       commandRunner.stderr.on('data', (data: string) => {
         coreInfo(data);
-        errorOutput += data;
       })
 
-      const exitCode = await new Promise<number>((resolve, reject) => {
+      const exitCode = await new Promise<number>((resolve) => {
         commandRunner.on('close', resolve);
       });
-
-      const output = infoOutput + errorOutput;
 
       return exitCode;
     }
