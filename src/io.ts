@@ -4,7 +4,7 @@ import { rimraf } from 'rimraf';
 export async function writeToFile(filePath: string, data: string): Promise<void> {
 
   return new Promise<void>((resolve) => {
-    const command = `echo "${data}" > ${filePath}`;
+    const command = `echo '${data}' > ${filePath}`;
     execSync(command).toString();
     resolve();
   });

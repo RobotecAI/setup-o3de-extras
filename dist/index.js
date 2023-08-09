@@ -155,7 +155,7 @@ const rimraf_1 = __nccwpck_require__(6284);
 function writeToFile(filePath, data) {
     return __awaiter(this, void 0, void 0, function* () {
         return new Promise((resolve) => {
-            const command = `echo "${data}" > ${filePath}`;
+            const command = `echo '${data}' > ${filePath}`;
             (0, child_process_1.execSync)(command).toString();
             resolve();
         });
