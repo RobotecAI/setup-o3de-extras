@@ -172,7 +172,7 @@ ENV NVIDIA_DRIVER_CAPABILITIES all
 
 ENV DISPLAY 20
 
-ADD entrypoint.sh /entrypoint.sh
+ADD docker/o3de-dev-extras-dev/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
     
 ENTRYPOINT [ "/entrypoint.sh" ]
