@@ -57,10 +57,10 @@ export async function runContainerScript(
       let command = '';
       if (repoPath.endsWith('o3de-extras')) {
         console.debug('o3de-extras detected');
-        command = `docker run --rm -v ${tempFilePath}:${containerScriptsPath} -v ${repoPath}:/data/workspace/o3de-extras --workdir /data/workspace/o3de-extras ${imageName} /bin/bash ${containerScriptFullPath}`;
+        command = `docker run --rm --gpus all -v ${tempFilePath}:${containerScriptsPath} -v ${repoPath}:/data/workspace/o3de-extras --workdir /data/workspace/o3de-extras ${imageName} /bin/bash ${containerScriptFullPath}`;
       } else {
         console.debug(`Running on a general-purpose repo: ${repoPath}`);
-        command = `docker run --rm -v ${tempFilePath}:${containerScriptsPath} -v ${repoPath}:/data/workspace/repository --workdir /data/workspace/repository ${imageName} /bin/bash ${containerScriptFullPath}`;
+        command = `docker run --rm --gpus all -v ${tempFilePath}:${containerScriptsPath} -v ${repoPath}:/data/workspace/repository --workdir /data/workspace/repository ${imageName} /bin/bash ${containerScriptFullPath}`;
       }
 
       // remove any new line characters

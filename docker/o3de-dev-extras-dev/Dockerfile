@@ -71,7 +71,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libffi7 \
     clang-12 \
     mesa-common-dev \
-    snapd && \
+    snapd \
+    xvfb \
+    x11vnc && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN echo "deb http://security.ubuntu.com/ubuntu focal-security main" | tee /etc/apt/sources.list.d/focal-security.list && \
+    apt-get update && \
+    apt-get install libssl1.1 && \
     rm -rf /var/lib/apt/lists/*
 
 # ROS pacakges
@@ -84,49 +91,61 @@ RUN apt-get update && apt-get install -y \
     ros-humble-rviz2 \
     ros-humble-tf2-ros \
     ros-humble-urdfdom \
-    ros-humble-vision-msgs &&    rm -rf /var/lib/apt/lists/*
+    ros-humble-vision-msgs \
+    ros-humble-rmw-cyclonedds-cpp &&    rm -rf /var/lib/apt/lists/*
 
 ## Symlink clang version to non-versioned clang and set cc to clang
 RUN update-alternatives --install /usr/bin/cc cc /usr/bin/clang 100 && \
     update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++ 100
 
+ADD https://api.github.com/repos/o3de/o3de/git/refs/heads/${O3DE_VERSION} o3de-version.json
+
 # Install o3de
 RUN git clone -b ${O3DE_VERSION} --single-branch https://github.com/o3de/o3de.git && \
     cd o3de && \
-    git lfs install && \
+    git lfs install
+
+RUN cd o3de && \
     git lfs pull && \
-    python/get_python.sh
+    python/get_python.sh 
+
+# Instal dependencies for pytest
+RUN ./o3de/python/pip.sh install pyyaml && \
+    ./o3de/python/pip.sh install lark
 
 # Install o3de-extras
+ADD https://api.github.com/repos/o3de/RobotecAI/git/refs/heads/${O3DE_EXTRAS_VERSION} o3de-extras-version.json
 RUN git clone -b ${O3DE_EXTRAS_VERSION} --single-branch https://github.com/RobotecAI/o3de-extras.git && \
     cd o3de-extras && \
     git lfs install && \
     git lfs pull
 
-RUN echo "deb http://security.ubuntu.com/ubuntu focal-security main" | tee /etc/apt/sources.list.d/focal-security.list && \
-    apt-get update && \
-    apt-get install libssl1.1 && \
-    rm -rf /var/lib/apt/lists/*
-
-# regiester engine and Gems from o3de-extras
+# Regiester engine and Gems from o3de-extras
 WORKDIR ${WORKDIR}
 RUN ./o3de/scripts/o3de.sh register --this-engine && \
     ./o3de/scripts/o3de.sh register --gem-path ./o3de-extras/Gems/ROS2 && \
     ./o3de/scripts/o3de.sh register --gem-path ./o3de-extras/Gems/RosRobotSample && \
     ./o3de/scripts/o3de.sh register --gem-path ./o3de-extras/Gems/WarehouseSample
 
-# create in project from template in o3de-extras
+# Create in project from template in o3de-extras
 RUN ./o3de/scripts/o3de.sh create-project \
     --project-path ${WORKDIR}/${PROJECT_NAME} \
     --template-path ./o3de-extras/Templates/Ros2ProjectTemplate/ -f
 
+# Enable multiplayer gem (dependency for pytest)
+RUN ./o3de/scripts/o3de.sh enable-gem \
+    -pp ${WORKDIR}/${PROJECT_NAME} \
+    -gp ./o3de/Gems/Multiplayer
+
+
 WORKDIR ${WORKDIR}/${PROJECT_NAME}
 
+# Configure project to enable physx and test modules
 RUN . /opt/ros/humble/setup.sh && \
-    cmake -B build/linux -S . -G "Ninja Multi-Config" -DLY_STRIP_DEBUG_SYMBOLS=ON
+    cmake -B build/linux -S . -G "Ninja Multi-Config" -DLY_STRIP_DEBUG_SYMBOLS=ON -DLY_DISABLE_TEST_MODULES=OFF -DAZ_USE_PHYSX5:BOOL=ON
 
 RUN . /opt/ros/humble/setup.sh && \
-    cmake --build build/linux --config profile --target ${PROJECT_NAME}.GameLauncher Editor
+    cmake --build build/linux --config profile
 
 RUN pip install python-statemachine
 
@@ -139,4 +158,21 @@ RUN mkdir -p $WORKDIR/repository
 
 VOLUME $WORKDIR/repository
 
-ENV RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+
+# Set enviromental values for ROS2
+RUN touch /root/.bashrc \
+ && echo "source /opt/ros/humble/setup.bash" >> /root/.bashrc \
+ && echo "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" >> /root/.bashrc \
+ && echo "export ROS_LOCALHOST_ONLY=1" >> /root/.bashrc \
+ && echo "export ROS_DOMAIN_ID=17" >> /root/.bashrc
+
+ENV NVIDIA_VISIBLE_DEVICES all
+ENV NVIDIA_DRIVER_CAPABILITIES all
+
+ENV DISPLAY 20
+
+ADD entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+    
+ENTRYPOINT [ "/entrypoint.sh" ]
