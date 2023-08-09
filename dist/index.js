@@ -21,12 +21,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.runContainerScript = void 0;
 const child_process_1 = __nccwpck_require__(2081);
-const io_1 = __nccwpck_require__(1915);
-const file_1 = __nccwpck_require__(4014);
 const fs_1 = __nccwpck_require__(7147);
 const os_1 = __importDefault(__nccwpck_require__(2037));
 const path_1 = __importDefault(__nccwpck_require__(1017));
-function runContainerScript(imageName, scriptToExecute) {
+const file_1 = __nccwpck_require__(4014);
+const io_1 = __nccwpck_require__(1915);
+function runContainerScript(imageName, scriptToExecute, coreInfo) {
     return __awaiter(this, void 0, void 0, function* () {
         // Write the script to a temporary file
         const tempFilePath = path_1.default.join(os_1.default.tmpdir(), 'ci-test');
@@ -78,12 +78,18 @@ function runContainerScript(imageName, scriptToExecute) {
                 }
                 // remove any new line characters
                 command = command.replace('\n', '');
-                // Execute the Docker command using spawnSync
-                const result = (0, child_process_1.spawnSync)('sh', ['-c', command], { stdio: 'pipe' });
-                const infoOutput = result.stdout ? result.stdout.toString('utf-8') : '';
-                const errorOutput = result.stderr ? result.stderr.toString('utf-8') : '';
-                const output = infoOutput + errorOutput;
-                return output.toString();
+                // Execute the Docker command using spawn
+                const commandRunner = (0, child_process_1.spawn)('sh', ['-c', command]);
+                commandRunner.stdout.on('data', (data) => {
+                    coreInfo(data);
+                });
+                commandRunner.stderr.on('data', (data) => {
+                    coreInfo(data);
+                });
+                const exitCode = yield new Promise((resolve) => {
+                    commandRunner.on('close', resolve);
+                });
+                return exitCode;
             }
         }
         catch (error) {
@@ -236,12 +242,11 @@ function run() {
                     }
                 });
             });
-            // Run the main script on the modified container
-            const mainOutput = yield (0, container_1.runContainerScript)(container, scriptToExecute);
             core.info('Main script output:');
-            core.info(mainOutput);
+            // Run the main script on the modified container
+            const exitCode = yield (0, container_1.runContainerScript)(container, scriptToExecute, core.info);
             // Perform assertions on the output as needed
-            if (mainOutput.includes('RESULT: ALL TESTS PASSED')) {
+            if (exitCode === 0) {
                 core.info('Docker test passed!');
             }
             else {

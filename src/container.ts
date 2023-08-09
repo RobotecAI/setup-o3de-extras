@@ -1,11 +1,14 @@
-import { execSync, spawnSync } from 'child_process';
-import { writeToFile, removeDirectorySync } from './io';
-import { checkIfFile } from './file';
-import { mkdir } from 'fs';
+import {execSync, spawn} from 'child_process';
+import {mkdir} from 'fs';
 import os from 'os';
 import path from 'path';
 
-export async function runContainerScript(imageName: string, scriptToExecute: string): Promise<string> {
+import {checkIfFile} from './file';
+import {removeDirectorySync, writeToFile} from './io';
+
+export async function runContainerScript(
+    imageName: string, scriptToExecute: string,
+    coreInfo: (message: string) => void): Promise<number> {
   // Write the script to a temporary file
 
   const tempFilePath = path.join(os.tmpdir(), 'ci-test');
@@ -63,14 +66,22 @@ export async function runContainerScript(imageName: string, scriptToExecute: str
       // remove any new line characters
       command = command.replace('\n', '');
 
-      // Execute the Docker command using spawnSync
-      const result = spawnSync('sh', ['-c', command], { stdio: 'pipe' });
+      // Execute the Docker command using spawn
+      const commandRunner = spawn('sh', ['-c', command]);
 
-      const infoOutput = result.stdout ? result.stdout.toString('utf-8') : '';
-      const errorOutput = result.stderr ? result.stderr.toString('utf-8') : '';
-      const output = infoOutput + errorOutput;
+      commandRunner.stdout.on('data', (data: string) => {
+        coreInfo(data);
+      })
 
-      return output.toString();
+      commandRunner.stderr.on('data', (data: string) => {
+        coreInfo(data);
+      })
+
+      const exitCode = await new Promise<number>((resolve) => {
+        commandRunner.on('close', resolve);
+      });
+
+      return exitCode;
     }
   } catch (error) {
     console.error(error);
