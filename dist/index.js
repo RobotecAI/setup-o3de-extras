@@ -94,7 +94,7 @@ function runContainerScript(imageName, scriptToExecute, coreInfo) {
                     commandRunner.on('close', resolve);
                 });
                 const output = infoOutput + errorOutput;
-                return output.toString();
+                return exitCode;
             }
         }
         catch (error) {
@@ -249,9 +249,9 @@ function run() {
             });
             core.info('Main script output:');
             // Run the main script on the modified container
-            const mainOutput = yield (0, container_1.runContainerScript)(container, scriptToExecute, core.info);
+            const exitCode = yield (0, container_1.runContainerScript)(container, scriptToExecute, core.info);
             // Perform assertions on the output as needed
-            if (mainOutput.includes('RESULT: ALL TESTS PASSED')) {
+            if (exitCode === 0) {
                 core.info('Docker test passed!');
             }
             else {

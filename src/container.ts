@@ -8,7 +8,7 @@ import {removeDirectorySync, writeToFile} from './io';
 
 export async function runContainerScript(
     imageName: string, scriptToExecute: string,
-    coreInfo: (message: string) => void): Promise<string> {
+    coreInfo: (message: string) => void): Promise<number> {
   // Write the script to a temporary file
 
   const tempFilePath = path.join(os.tmpdir(), 'ci-test');
@@ -82,13 +82,13 @@ export async function runContainerScript(
         errorOutput += data;
       })
 
-      const exitCode = await new Promise((resolve, reject) => {
+      const exitCode = await new Promise<number>((resolve, reject) => {
         commandRunner.on('close', resolve);
       });
 
       const output = infoOutput + errorOutput;
 
-      return output.toString();
+      return exitCode;
     }
   } catch (error) {
     console.error(error);
