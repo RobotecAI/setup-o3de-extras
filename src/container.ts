@@ -82,6 +82,10 @@ export async function runContainerScript(
         errorOutput += data;
       })
 
+      const exitCode = await new Promise((resolve, reject) => {
+        commandRunner.on('close', resolve);
+      });
+
       const output = infoOutput + errorOutput;
 
       return output.toString();

@@ -90,6 +90,9 @@ function runContainerScript(imageName, scriptToExecute, coreInfo) {
                     coreInfo(data);
                     errorOutput += data;
                 });
+                const exitCode = yield new Promise((resolve, reject) => {
+                    commandRunner.on('close', resolve);
+                });
                 const output = infoOutput + errorOutput;
                 return output.toString();
             }
