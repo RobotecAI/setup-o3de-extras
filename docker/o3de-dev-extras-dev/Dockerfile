@@ -76,6 +76,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     x11vnc && \
     rm -rf /var/lib/apt/lists/*
 
+RUN echo "deb http://security.ubuntu.com/ubuntu focal-security main" | tee /etc/apt/sources.list.d/focal-security.list && \
+    apt-get update && \
+    apt-get install libssl1.1 && \
+    rm -rf /var/lib/apt/lists/*
+
 # ROS pacakges
 RUN apt-get update && apt-get install -y \
     ros-humble-ackermann-msgs \
@@ -98,11 +103,15 @@ ADD https://api.github.com/repos/o3de/o3de/git/refs/heads/${O3DE_VERSION} o3de-v
 # Install o3de
 RUN git clone -b ${O3DE_VERSION} --single-branch https://github.com/o3de/o3de.git && \
     cd o3de && \
-    git lfs install && \
-    git lfs pull
+    git lfs install
 
 RUN cd o3de && \
-    python/get_python.sh
+    git lfs pull && \
+    python/get_python.sh 
+
+# Instal dependencies for pytest
+RUN ./o3de/python/pip.sh install pyyaml && \
+    ./o3de/python/pip.sh install lark
 
 # Install o3de-extras
 ADD https://api.github.com/repos/o3de/RobotecAI/git/refs/heads/${O3DE_EXTRAS_VERSION} o3de-extras-version.json
@@ -110,11 +119,6 @@ RUN git clone -b ${O3DE_EXTRAS_VERSION} --single-branch https://github.com/Robot
     cd o3de-extras && \
     git lfs install && \
     git lfs pull
-
-RUN echo "deb http://security.ubuntu.com/ubuntu focal-security main" | tee /etc/apt/sources.list.d/focal-security.list && \
-    apt-get update && \
-    apt-get install libssl1.1 && \
-    rm -rf /var/lib/apt/lists/*
 
 # Regiester engine and Gems from o3de-extras
 WORKDIR ${WORKDIR}
@@ -133,9 +137,6 @@ RUN ./o3de/scripts/o3de.sh enable-gem \
     -pp ${WORKDIR}/${PROJECT_NAME} \
     -gp ./o3de/Gems/Multiplayer
 
-# Instal dependencies for pytest
-RUN ./o3de/python/pip.sh install pyyaml && \
-    ./o3de/python/pip.sh install lark
 
 WORKDIR ${WORKDIR}/${PROJECT_NAME}
 

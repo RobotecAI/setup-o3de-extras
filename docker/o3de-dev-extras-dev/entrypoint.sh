@@ -8,3 +8,6 @@ export ROS_DOMAIN_ID=17
 Xvfb :20 -screen 0 1366x768x16 &
 
 exec "$@"
+
+shopt -s dotglob
+rm -rf *
