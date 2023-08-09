@@ -38,5 +38,8 @@ command="./o3de/python/python.sh -m pytest --build-directory ./WarehouseTest/bui
 runTestCommand
 
 summorizeTests
-
-exit 0
+if [ $sumOfTests -eq $sumOfSuccesfulTests ] then
+    exit 0
+else
+    exit 1
+fi
