@@ -17,10 +17,11 @@ async function run(): Promise<void> {
       });
     });
 
-    // Run the main script on the modified container
-    const mainOutput = await runContainerScript(container, scriptToExecute);
     core.info('Main script output:');
-    core.info(mainOutput);
+
+    // Run the main script on the modified container
+    const mainOutput =
+        await runContainerScript(container, scriptToExecute, core.info);
 
     // Perform assertions on the output as needed
     if (mainOutput.includes('RESULT: ALL TESTS PASSED')) {
