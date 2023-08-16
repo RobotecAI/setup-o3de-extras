@@ -98,8 +98,14 @@ RUN apt-get update && apt-get install -y \
 RUN update-alternatives --install /usr/bin/cc cc /usr/bin/clang 100 && \
     update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++ 100
 
-ADD https://api.github.com/repos/o3de/o3de/git/refs/heads/${O3DE_VERSION} o3de-version.json
+ADD docker/o3de-dev-extras-dev/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh && \
+    chmod 777 ${WORKDIR}
 
+RUN adduser --home /testrunner testrunner
+USER testrunner
+
+ADD https://api.github.com/repos/o3de/o3de/git/refs/heads/${O3DE_VERSION} o3de-version.json
 # Install o3de
 RUN git clone -b ${O3DE_VERSION} --single-branch https://github.com/o3de/o3de.git && \
     cd o3de && \
@@ -161,18 +167,15 @@ VOLUME $WORKDIR/repository
 ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
 # Set enviromental values for ROS2
-RUN touch /root/.bashrc \
- && echo "source /opt/ros/humble/setup.bash" >> /root/.bashrc \
- && echo "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" >> /root/.bashrc \
- && echo "export ROS_LOCALHOST_ONLY=1" >> /root/.bashrc \
- && echo "export ROS_DOMAIN_ID=17" >> /root/.bashrc
+RUN touch /testrunner/.bashrc \
+ && echo "source /opt/ros/humble/setup.bash" >> /testrunner/.bashrc \
+ && echo "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" >> /testrunner/.bashrc \
+ && echo "export ROS_LOCALHOST_ONLY=1" >> /testrunner/.bashrc \
+ && echo "export ROS_DOMAIN_ID=17" >> /testrunner/.bashrc
 
 ENV NVIDIA_VISIBLE_DEVICES all
 ENV NVIDIA_DRIVER_CAPABILITIES all
 
 ENV DISPLAY 20
-
-ADD docker/o3de-dev-extras-dev/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
     
 ENTRYPOINT [ "/entrypoint.sh" ]
