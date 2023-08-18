@@ -142,7 +142,7 @@ WORKDIR ${WORKDIR}/${PROJECT_NAME}
 
 # Configure project to enable physx and test modules
 RUN . /opt/ros/humble/setup.sh && \
-    cmake -B build/linux -S . -G "Ninja Multi-Config" -DLY_STRIP_DEBUG_SYMBOLS=ON -DLY_DISABLE_TEST_MODULES=OFF -DAZ_USE_PHYSX5:BOOL=ON
+    cmake -B build/linux -S . -G "Ninja Multi-Config" -DLY_STRIP_DEBUG_SYMBOLS=ON -DLY_DISABLE_TEST_MODULES=OFF -DLY_UNITY_BUILD=OFF -DAZ_USE_PHYSX5:BOOL=ON
 
 RUN . /opt/ros/humble/setup.sh && \
     cmake --build build/linux --config profile
