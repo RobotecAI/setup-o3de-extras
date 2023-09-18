@@ -120,7 +120,7 @@ RUN ./o3de/python/pip.sh install pyyaml && \
     ./o3de/python/pip.sh install lark
 
 # Install o3de-extras
-ADD https://api.github.com/repos/RobotecAI/o3de-extras/git/refs/heads/${O3DE_EXTRAS_VERSION} o3de-extras-version.json
+ADD https://api.github.com/repos/o3de/o3de-extras/git/refs/heads/${O3DE_EXTRAS_VERSION} o3de-extras-version.json
 RUN git clone -b ${O3DE_EXTRAS_VERSION} --single-branch https://github.com/RobotecAI/o3de-extras.git && \
     cd o3de-extras && \
     git lfs install && \
